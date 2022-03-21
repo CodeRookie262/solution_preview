@@ -63,14 +63,14 @@ export const createMockRequest = (func, ...arg) => (delay(3000)
 	}))
 
 export class SolutionLiveReload {
-
+  // 清除依赖队列
 	static clear (depends, exac) {
 		while (depends.length) {
 			const depend = depends.shift()
 			if (exac instanceof Function) exac(depend)
 		}
 	}
-
+  // 默认最大重试次数
 	static DEFAULT_MAX_COUNT = 5
 
 	constructor ({maxCount = 5}) {
@@ -82,13 +82,15 @@ export class SolutionLiveReload {
 			maxCount
 		})
 	}
-
+  
 	INIT_FETCH_HEAD = Promise.resolve('INIT_FETCH_HEAD')
 
+  // 注册依赖提交状态
 	feedback (feedbackCallback) {
 		if (feedbackCallback instanceof Function) this.feedbackCallback = feedbackCallback
 	}
 
+  // 添加依赖
 	add (dep) {
 		this.update()
 		const {depends, __depends} = this
@@ -98,6 +100,7 @@ export class SolutionLiveReload {
 		depends.push(dep)
 	}
 
+  // 合并依赖
 	combine (depends, __depends, data = {}) {
 		SolutionLiveReload.clear(depends, (dep) => {
 			if (!__depends.includes(dep)) __depends.push(dep)
@@ -114,6 +117,7 @@ export class SolutionLiveReload {
 		})
 	} 
 
+  // 提交依赖更新
 	update = debounce(async function () {
 		const {depends, __depends} = this
 		// console.log(depends.length, __depends.length)
@@ -124,6 +128,7 @@ export class SolutionLiveReload {
 			[BASE_DEPEND_TYPE]: [],
 			[HIGHT_ORDER_TYPE]: []
 		}
+    // Promise 链发起请求
 		this.INIT_FETCH_HEAD
 			.then((res) => {
 				this.combine(depends, __depends, data)
